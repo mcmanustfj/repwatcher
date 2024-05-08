@@ -1,0 +1,11 @@
+pip
+bump2version
+wheel
+tox
+coverage
+Sphinx
+twine
+ruff
+build
+
+
