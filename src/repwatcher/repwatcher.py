@@ -27,8 +27,8 @@ def uploadReplay(filename: Path) -> None:
     if authtoken:
         cookies = {"authtoken": authtoken}
     try:
+        sleep(0.5)
         with open(filename, "rb") as f:
-            sleep(0.5)
             files = {"file": f}
             response = requests.post(url, files=files, cookies=cookies)
             if response.status_code == 200:
@@ -52,7 +52,10 @@ class ReplayHandler(FileSystemEventHandler):
             and event.src_path.endswith(".rep")
             and not is_uploaded(event.src_path)
         ):
-            uploadReplay(Path(event.src_path))
+            try:
+                uploadReplay(Path(event.src_path))
+            except Exception:
+                logging.exception("Unexpected error while uploading replay.")
 
 
 def watch() -> None:

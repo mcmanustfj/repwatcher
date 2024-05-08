@@ -62,13 +62,12 @@ Ready to contribute? Here's how to set up `repwatcher` for local development.
 1. Fork the `repwatcher` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/repwatcher.git
+    $ git clone git@github.com:mcmanustfj/repwatcher.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+3. At the moment, I'm using (rye)[https://rye-up.com/]. to manage dependencies.
+    
+    $ rye sync
 
-    $ mkvirtualenv repwatcher
-    $ cd repwatcher/
-    $ python setup.py develop
 
 4. Create a branch for local development::
 

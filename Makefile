@@ -27,56 +27,31 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
+clean: clean-build clean-pyc ## remove all build, test, coverage and Python artifacts
 
 clean-build: ## remove build artifacts
 	rm -fr build/
 	rm -fr dist/
 	rm -fr .eggs/
-	find . -name '*.egg-info' -exec rm -fr {} +
-	find . -name '*.egg' -exec rm -f {} +
+	rm -fr src/*.egg-info
 
 clean-pyc: ## remove Python file artifacts
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
-
-clean-test: ## remove test and coverage artifacts
-	rm -fr .tox/
-	rm -f .coverage
-	rm -fr htmlcov/
-	rm -fr .pytest_cache
+	gci __pycache__ -R | Remove-Item -Force -Recurse
 
 lint: 
-	ruff check
-
-test: ## run tests quickly with the default Python
-	python setup.py test
-
-coverage: ## check code coverage quickly with the default Python
-	coverage run --source repwatcher setup.py test
-	coverage report -m
-	coverage html
-	$(BROWSER) htmlcov/index.html
-
-docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/repwatcher.rst
-	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ repwatcher
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
-
-servedocs: docs ## compile the docs watching for changes
-	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+	rye lint
+	rye run pyright
 
 release: dist ## package and upload a release
-	twine upload dist/*
+	rye publish
 
 dist: clean ## builds source and wheel package
 	python -m build
 	ls -l dist
 
 install: clean ## install the package to the active Python's site-packages
-	pip install .
+	rye sync

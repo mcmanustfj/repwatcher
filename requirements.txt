@@ -1,5 +1,0 @@
-requests
-platformdirs
-watchdog==4
-rich
-typer

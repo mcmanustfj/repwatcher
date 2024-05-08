@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from functools import cache
+from functools import lru_cache
 import json
 from pathlib import Path
 import platformdirs
@@ -7,7 +7,7 @@ import logging
 
 import typer
 
-DATA_DIR = Path(platformdirs.user_data_dir(appname="RepMasteredWatcher"))
+DATA_DIR = Path(platformdirs.user_data_dir(appname="RepWatcher"))
 config_file = DATA_DIR / "config.txt"
 
 
@@ -17,7 +17,7 @@ class Config:
     authtoken: str
 
 
-@cache
+@lru_cache(maxsize=1)
 def get_config() -> Config:
     logging.info(f"Reading config from {config_file}")
     with open(config_file, "r") as f:

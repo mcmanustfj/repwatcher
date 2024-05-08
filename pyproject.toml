@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "repwatcher"
-version = "0.1.0"
+version = "0.1.1"
 description = "Tool to automatically upload SC:BW replays to RepMastered.com"
 readme = "README.rst"
 authors = [{ name = "Thomas McManus", email = "mcmanustfj@gmail.com" }]
@@ -13,30 +13,38 @@ classifiers = []
 license = { text = "MIT license" }
 requires-python = ">=3.8"
 keywords = ["starcraft", "replays", "repmastered"]
-dependencies = []
+dependencies = [
+    "requests",
+    "platformdirs",
+    "watchdog",
+    "rich",
+    "typer",
+]
 
 [project.optional-dependencies]
 dev = [
-  "coverage", # testing
-  "mypy",     # linting
-  "pytest",   # testing
-  "ruff",     # linting
+  "pyright", 
+  "ruff",  
+  "build",
+  "twine",
 ]
 
 [project.urls]
 
 bugs = "https://github.com/mcmanustfj/repwatcher/issues"
-changelog = "https://github.com/mcmanustfj/repwatcher/blob/master/changelog.md"
+changelog = "https://github.com/mcmanustfj/repwatcher/blob/master/CHANGELOG.md"
 homepage = "https://github.com/mcmanustfj/repwatcher"
 
 [project.scripts]
 repwatcher = "repwatcher.cli:main"
 
+[tool]
+rye = { dev-dependencies = [
+    "pyright>=1.1.362",
+] }
+
 [tool.setuptools]
 package-dir = { "" = "src" }
-
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]
