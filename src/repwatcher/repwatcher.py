@@ -1,12 +1,9 @@
-import platform
-import subprocess
-import os, sys
+import os
+import sys
 from pathlib import Path
 import requests
-import atexit 
-import argparse
+import atexit
 
-import platformdirs 
 from time import sleep
 
 from watchdog.observers import Observer
@@ -18,13 +15,11 @@ import logging
 from repwatcher.config import get_config
 
 
-
-
 def is_uploaded(filename: str) -> bool:
     return filename.endswith(".uploaded.rep")
 
 
-def uploadReplay(filename: Path)-> None:
+def uploadReplay(filename: Path) -> None:
     url = "https://repmastered.app/upload"
     success = False
     authtoken = get_config().authtoken
@@ -50,7 +45,6 @@ def uploadReplay(filename: Path)-> None:
         os.rename(filename, filename.with_suffix(".uploaded.rep"))
 
 
-
 class ReplayHandler(FileSystemEventHandler):
     def on_created(self, event: FileSystemEvent):
         if (
@@ -61,7 +55,7 @@ class ReplayHandler(FileSystemEventHandler):
             uploadReplay(Path(event.src_path))
 
 
-def watch()-> None:
+def watch() -> None:
     logging.info("Starting RepMastered Watcher")
     config = get_config()
 
@@ -70,12 +64,11 @@ def watch()-> None:
             f"Replay directory {config.replay_directory} does not exist. Please update the config file."
         )
         sys.exit(1)
-    
+
     logging.info(f"Watching {config.replay_directory} for new replays")
 
     observer = Observer()
-    observer.schedule(ReplayHandler(), path=config.replay_directory,
-                       recursive=True)
+    observer.schedule(ReplayHandler(), path=config.replay_directory, recursive=True)
     observer.start()
 
     atexit.register(cleanup, observer)
@@ -87,9 +80,7 @@ def watch()-> None:
         sys.exit(0)
 
 
-def cleanup(observer: BaseObserver)-> None:
+def cleanup(observer: BaseObserver) -> None:
     logging.info("Shutting down")
     observer.stop()
     observer.join()
-
-

@@ -48,11 +48,8 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
 
-lint/flake8: ## check style with flake8
-	flake8 repwatcher tests
-
-
-lint: lint/flake8 ## check style
+lint: 
+	ruff check
 
 test: ## run tests quickly with the default Python
 	python setup.py test
@@ -81,8 +78,7 @@ release: dist ## package and upload a release
 	twine upload dist/*
 
 dist: clean ## builds source and wheel package
-	python -m build sdist
-	python -m build --wheel
+	python -m build
 	ls -l dist
 
 install: clean ## install the package to the active Python's site-packages

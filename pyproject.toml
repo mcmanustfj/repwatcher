@@ -41,6 +41,8 @@ dependencies = {file = ["requirements.txt"]}
 [tool.setuptools.package-data]
 "*" = ["*.*"]
 
+[tool.ruff]
+include = ["src"]
 
 # Pyright
 # ----

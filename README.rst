@@ -15,9 +15,12 @@ Recommended installation is with pipx (`pip install pipx`):
 
 
 Configuration:
+
 `repwatcher config` will open a config file.
-`replay_directory` is the directory to watch.
+
+`replay_directory` is the directory to watch.    
 `authtoken` is the `authtoken` cookie from RepMastered.com. 
+
 If you have `authtoken` in your config, uploads will be associated with your account.
 
 
@@ -28,6 +31,7 @@ Features
 --------
 
 This is a tool to watch a directory for new replays and upload them to RepMastered.com
+
 It should be cross-platform, but has only been tested on Windows.
 
 Credits

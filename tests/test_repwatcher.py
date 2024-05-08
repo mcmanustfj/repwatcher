@@ -2,10 +2,8 @@
 
 """Tests for `repwatcher` package."""
 
-
 import unittest
 
-from repwatcher import repwatcher
 
 
 class TestRepwatcher(unittest.TestCase):

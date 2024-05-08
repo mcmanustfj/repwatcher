@@ -16,6 +16,7 @@ class Config:
     replay_directory: str
     authtoken: str
 
+
 @cache
 def get_config() -> Config:
     logging.info(f"Reading config from {config_file}")
@@ -23,11 +24,13 @@ def get_config() -> Config:
         dict = json.load(f)
         return Config(**dict)
 
-def ensure_config()-> None: 
+
+def ensure_config() -> None:
     if not config_file.exists():
         create_config()
 
-def create_config()-> None:
+
+def create_config() -> None:
     replay_directory = str(
         Path(platformdirs.user_documents_dir())
         / "StarCraft"
@@ -46,7 +49,7 @@ def create_config()-> None:
         json.dump(config, f, indent=4)
 
 
-def open_config()-> None:
+def open_config() -> None:
     ensure_config()
     # if on windows
     typer.launch(str(config_file))
