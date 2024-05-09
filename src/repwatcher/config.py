@@ -41,6 +41,7 @@ def create_config() -> None:
     logging.info(f"Creating config file at {config_file}")
     logging.info(f"Default replay directory: {replay_directory}")
     logging.info("Run repwatcher config to change the replay directory.")
+    config_file.parent.mkdir(parents=True, exist_ok=True)
     with open(config_file, "w") as f:
         config = {
             "replay_directory": replay_directory,
