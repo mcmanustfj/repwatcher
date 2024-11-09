@@ -4,14 +4,15 @@ import logging
 import os
 import sys
 
-from repwatcher import repwatcher
-from repwatcher.config import DATA_DIR, open_config
+from repwatcher import repwatcher, config
+from repwatcher.config import DATA_DIR
 
 import typer
 from rich.console import Console
 
 
 app = typer.Typer()
+app.add_typer(config.app, name="config")
 console = Console()
 
 
@@ -22,8 +23,10 @@ def watch() -> None:
 
 
 @app.command()
-def config() -> None:
+def config(reset: bool =False) -> None:
     """Create or open a configuration file."""
+    if reset:
+        reset_config()    
     open_config()
 
 

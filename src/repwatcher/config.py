@@ -8,21 +8,28 @@ import logging
 import typer
 
 DATA_DIR = Path(platformdirs.user_data_dir(appname="RepWatcher"))
-config_file = DATA_DIR / "config.txt"
+config_file: Path = DATA_DIR / "config.txt"
 
+app = typer.Typer()
 
 @dataclass
 class Config:
     replay_directory: str
     authtoken: str
+    screp_path: str = "screp.exe"
+    advanced: bool = False
 
 
-@lru_cache(maxsize=1)
 def get_config() -> Config:
     logging.info(f"Reading config from {config_file}")
     with open(config_file, "r") as f:
-        dict = json.load(f)
-        return Config(**dict)
+        _config = json.load(f)
+        try:
+            return Config(**_config)
+        except TypeError:
+            logging.error(f"Failed to read config from {config_file}")
+            logging.error(f"Config: {_config}")
+            print("Failed to read config file. Run repwatcher config reset to reset it.")
 
 
 def ensure_config() -> None:
@@ -38,19 +45,52 @@ def create_config() -> None:
         / "Replays"
         / "Autosave"
     )
-    logging.info(f"Creating config file at {config_file}")
-    logging.info(f"Default replay directory: {replay_directory}")
-    logging.info("Run repwatcher config to change the replay directory.")
+    print(f"Creating config file at {config_file}")
+    print(f"Default replay directory: {replay_directory}")
+    print("Run repwatcher config set replay_directory DIR to change the replay directory.")
     config_file.parent.mkdir(parents=True, exist_ok=True)
     with open(config_file, "w") as f:
         config = {
             "replay_directory": replay_directory,
             "authtoken": "",
+            "screp_path": "",
+            "advanced": False,
         }
         json.dump(config, f, indent=4)
 
-
+@app.command("open")
 def open_config() -> None:
     ensure_config()
     # if on windows
     typer.launch(str(config_file))
+
+@app.command()
+def reset() -> None:
+    if config_file.exists():
+        logging.info(f"Deleting config file at {config_file}")
+        config_file.unlink()
+    create_config()
+    print("Config reset to default values.")
+
+@app.command("set")
+def set_config(key: str, value: str) -> None:
+    ensure_config()
+    config = get_config()
+    if hasattr(config, key):
+        logging.info(f"Setting {key} to {value}")
+        with open(config_file, "r") as f:
+            _config = json.load(f)
+        _config[key] = value
+        with open(config_file, "w") as f:
+            json.dump(_config, f, indent=4)
+    else:
+        print(f"Invalid key: {key}")
+
+@app.command()
+def show() -> None:
+    ensure_config()
+    config = get_config()
+    print(f"replay_directory={config.replay_directory}")
+    print(f"authtoken={config.authtoken}")
+    print(f"screp_path={config.screp_path}")
+    print(f"advanced={config.advanced}")
