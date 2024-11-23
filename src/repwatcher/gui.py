@@ -103,4 +103,6 @@ def post_game(game: Game) -> None:
     save.pack(side="left", expand=True)
     open_replay.pack(side="left", expand=True)
 
+    app.after(1, lambda: app.focus_force())
+
     app.mainloop()
