@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from functools import lru_cache
 import json
 from pathlib import Path
 import platformdirs
@@ -26,7 +25,9 @@ def get_config() -> Config:
     with open(config_file, "r") as f:
         _config = json.load(f)
         try:
-            _config["bw_aliases"] = [s.strip() for s in _config.get("bw_aliases", "").split(',')]
+            _config["bw_aliases"] = [
+                s.strip() for s in _config.get("bw_aliases", "").split(",")
+            ]
             return Config(**_config)
         except TypeError:
             logging.error(f"Failed to read config from {config_file}")

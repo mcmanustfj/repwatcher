@@ -1,7 +1,5 @@
-import os
 import sys
 from pathlib import Path
-import requests
 import atexit
 
 from time import sleep
@@ -19,23 +17,24 @@ from repwatcher.replay import process_replay
 from .config import get_config
 from .webclient import upload_replay_repmastered
 
+
 class ReplayHandler(FileSystemEventHandler):
     def on_created(self, event: FileSystemEvent):
-        if (
-            not event.is_directory
-            and event.src_path.endswith(".rep")
-        ):
-            game, path = process_replay(event.src_path, bias_players=get_config().bw_aliases)
+        if not event.is_directory and event.src_path.endswith(".rep"):
+            game, path = process_replay(
+                event.src_path, bias_players=get_config().bw_aliases
+            )
             if path is None:
                 return
             dbgame = Game.from_game(game, path)
             # if dbgame.url:
             #     return
-            dbgame.url = upload_replay_repmastered(Path(path)) # type: ignore
+            dbgame.url = upload_replay_repmastered(Path(path))  # type: ignore
             dbgame.save()
 
             if get_config().advanced:
                 post_game(dbgame)
+
 
 def watch() -> None:
     logging.info("Starting RepMastered Watcher")

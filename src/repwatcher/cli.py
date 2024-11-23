@@ -3,13 +3,13 @@
 import logging
 import os
 import sys
-
+from pathlib import Path
 
 from . import config, watcher
-from .config import DATA_DIR
-from .replay import *
+from .config import DATA_DIR, get_config
+from .replay import discover_replays, process_replay
 from .db import Game, create_default_build_orders
-from .webclient import upload_replay_repmastered, upload_replays_repmastered
+from .webclient import upload_replays_repmastered
 from .gui import post_game
 
 import typer
@@ -25,7 +25,9 @@ console = Console()
 def watch() -> None:
     """Watch for new replays."""
     if not Path(get_config().screp_path).exists():
-        console.print("screp not found. Please update the config file, or download screp from https://github.com/icza/screp/releases")
+        console.print(
+            "screp not found. Please update the config file, or download screp from https://github.com/icza/screp/releases"
+        )
         return
     watcher.watch()
 
@@ -34,6 +36,7 @@ def watch() -> None:
 def test() -> None:
     game: Game = Game.select().first()
     post_game(game)
+
 
 @app.command()
 def create_defaults() -> None:
@@ -62,10 +65,10 @@ def backfill() -> None:
         if dbgame.url:
             continue
         to_upload.append(path)
-    
+
     if not to_upload:
         return
-    
+
     logging.info(f"Uploading {len(to_upload)} backfilled replays")
     name_to_url = upload_replays_repmastered(filenames=to_upload)
     for name, url in name_to_url.items():
