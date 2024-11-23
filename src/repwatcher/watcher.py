@@ -13,6 +13,7 @@ from watchdog.events import FileSystemEventHandler, FileSystemEvent
 import logging
 
 from repwatcher.db import Game
+from repwatcher.gui import post_game
 from repwatcher.replay import process_replay
 
 from .config import get_config
@@ -28,10 +29,13 @@ class ReplayHandler(FileSystemEventHandler):
             if path is None:
                 return
             dbgame = Game.from_game(game, path)
-            if dbgame.url:
-                return
+            # if dbgame.url:
+            #     return
             dbgame.url = upload_replay_repmastered(Path(path)) # type: ignore
             dbgame.save()
+
+            if get_config().advanced:
+                post_game(dbgame)
 
 def watch() -> None:
     logging.info("Starting RepMastered Watcher")

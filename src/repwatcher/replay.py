@@ -107,3 +107,6 @@ def process_replay(filename: str | Path, bias_players: list | None = None) -> tu
 def discover_replays() -> list[Path]:
     config = get_config()
     return list(Path(config.replay_directory).rglob("*.rep"))
+
+def sanitizemap(map: str) -> str:
+    return "".join(c for c in map if c.isprintable())

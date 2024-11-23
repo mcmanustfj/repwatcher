@@ -8,8 +8,9 @@ import sys
 from . import config, watcher
 from .config import DATA_DIR
 from .replay import *
-from .db import Game
+from .db import Game, create_default_build_orders
 from .webclient import upload_replay_repmastered, upload_replays_repmastered
+from .gui import post_game
 
 import typer
 from rich.console import Console
@@ -23,40 +24,21 @@ console = Console()
 @app.command()
 def watch() -> None:
     """Watch for new replays."""
+    if not Path(get_config().screp_path).exists():
+        console.print("screp not found. Please update the config file, or download screp from https://github.com/icza/screp/releases")
+        return
     watcher.watch()
 
 
 @app.command()
 def test() -> None:
-    import flet as ft # type: ignore
-    def main(page: ft.Page):
-        page.title = "Flet counter example"
-        page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    game: Game = Game.select().first()
+    post_game(game)
 
-        txt_number = ft.TextField(value="0", text_align=ft.TextAlign.RIGHT, width=100)
-
-        def minus_click(e):
-            txt_number.value = str(int(txt_number.value or 0) - 1)
-            page.update()
-
-        def plus_click(e):
-            txt_number.value = str(int(txt_number.value or 0) + 1)
-            page.update()
-
-        page.add(
-            ft.Row(
-                [
-                    ft.IconButton(ft.icons.REMOVE, on_click=minus_click),
-                    txt_number,
-                    ft.IconButton(ft.icons.ADD, on_click=plus_click),
-                ],
-                alignment=ft.MainAxisAlignment.CENTER,
-            )
-        )
-
-    ft.app(main)
-
-
+@app.command()
+def create_defaults() -> None:
+    """Create default build orders."""
+    create_default_build_orders()
 
 
 @app.command()
