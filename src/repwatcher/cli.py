@@ -8,7 +8,7 @@ import sys
 from . import config, watcher
 from .config import DATA_DIR
 from .replay import *
-from .db import DbGame
+from .db import Game
 from .webclient import upload_replay_repmastered, upload_replays_repmastered
 
 import typer
@@ -28,14 +28,33 @@ def watch() -> None:
 
 @app.command()
 def test() -> None:
-    """Run screp."""
-    filename = Path(r"C:\Users\mcmanustfj\Documents\Programming\repwatcher\202411081904-VermeerSE-ZvP-McRibbed-Niv-izz.rep")
-    game, path = process_replay(filename)
-    if path is None:
-        return
-    dbgame = DbGame.from_game(game, path)
-    dbgame.url = upload_replay_repmastered(Path(path)) # type: ignore
-    dbgame.save()
+    import flet as ft # type: ignore
+    def main(page: ft.Page):
+        page.title = "Flet counter example"
+        page.vertical_alignment = ft.MainAxisAlignment.CENTER
+
+        txt_number = ft.TextField(value="0", text_align=ft.TextAlign.RIGHT, width=100)
+
+        def minus_click(e):
+            txt_number.value = str(int(txt_number.value or 0) - 1)
+            page.update()
+
+        def plus_click(e):
+            txt_number.value = str(int(txt_number.value or 0) + 1)
+            page.update()
+
+        page.add(
+            ft.Row(
+                [
+                    ft.IconButton(ft.icons.REMOVE, on_click=minus_click),
+                    txt_number,
+                    ft.IconButton(ft.icons.ADD, on_click=plus_click),
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            )
+        )
+
+    ft.app(main)
 
 
 
@@ -44,7 +63,7 @@ def test() -> None:
 def backfill() -> None:
     """Backfill replays."""
     logging.info("Backfilling replays")
-    path_to_game: dict[Path, DbGame] = {}
+    path_to_game: dict[Path, Game] = {}
     name_to_path: dict[str, Path] = {}
     for replay in discover_replays():
         try:
@@ -53,7 +72,7 @@ def backfill() -> None:
             continue
         if not path:
             continue
-        path_to_game[path] = DbGame.from_game(game, path)
+        path_to_game[path] = Game.from_game(game, path)
         name_to_path[replay.name] = path
 
     to_upload = []
@@ -72,7 +91,7 @@ def backfill() -> None:
         dbgame.url = url  # type: ignore
         dbgame.save()
 
-        
+
 def main() -> int:
     os.makedirs(DATA_DIR, exist_ok=True)
     logging.basicConfig(

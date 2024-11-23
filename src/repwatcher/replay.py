@@ -1,19 +1,37 @@
 """Python wrapper for screp.exe"""
 
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from json import loads
 import os
 from pathlib import Path
 import shutil
+from typing import Literal, TypedDict
 
 import requests
 from .config import get_config
 import subprocess
 import logging
 
-from .models import Game
+type Race = Literal["Zerg"] | Literal["Terran"] | Literal["Protoss"] | Literal["Random"]
 
-def parse_replay(filename: str | Path) -> Game:
+class PlayerData(TypedDict):
+    name: str
+    race: Race
+    is_human: bool
+
+@dataclass
+class ParsedReplay:
+    start_time: datetime
+    duration: timedelta
+    map: str
+    players: list[PlayerData]
+    winner: str
+
+    def all_human(self) -> bool:
+        return all(player["is_human"] for player in self.players)
+
+def parse_replay(filename: str | Path) -> ParsedReplay:
     filename = str(filename)
     logging.debug(f"Parsing replay {filename}")
     config = get_config()
@@ -24,7 +42,7 @@ def parse_replay(filename: str | Path) -> Game:
     if len(players) != 2:
         raise NotImplementedError("Only 1v1 games are supported")
 
-    return Game(
+    return ParsedReplay(
         start_time=datetime.strptime(
             results["Header"]["StartTime"], "%Y-%m-%dT%H:%M:%S%z"
         ),
@@ -42,7 +60,7 @@ def parse_replay(filename: str | Path) -> Game:
     )
 
 
-def name_replay(game: Game, bias_players: list | None = None) -> str:
+def name_replay(game: ParsedReplay, bias_players: list | None = None) -> str:
     winstr = ""
     if bias_players:
       game.players.sort(key=lambda x: x["name"] in bias_players, reverse=True)
@@ -59,7 +77,7 @@ def name_replay(game: Game, bias_players: list | None = None) -> str:
     return name
 
 
-def process_replay(filename: str | Path, bias_players: list | None = None) -> tuple[Game, Path | None]:
+def process_replay(filename: str | Path, bias_players: list | None = None) -> tuple[ParsedReplay, Path | None]:
     logging.debug(f"Processing replay {filename}")
     filename = Path(filename).resolve()
     game = parse_replay(filename)

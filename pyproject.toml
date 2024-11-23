@@ -21,6 +21,7 @@ dependencies = [
     "typer",
     "peewee>=3.17.8",
     "beautifulsoup4>=4.12.3",
+    "flet>=0.24.1",
 ]
 
 [project.optional-dependencies]
