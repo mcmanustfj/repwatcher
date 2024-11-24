@@ -11,7 +11,7 @@ from watchdog.events import FileSystemEventHandler, FileSystemEvent
 import logging
 
 from repwatcher.db import Game
-from repwatcher.gui import post_game
+from repwatcher.gui import edit_game
 from repwatcher.replay import process_replay
 
 from .config import get_config
@@ -33,7 +33,7 @@ class ReplayHandler(FileSystemEventHandler):
             dbgame.save()
 
             if get_config().advanced:
-                post_game(dbgame)
+                edit_game(dbgame)
 
 
 def watch() -> None:

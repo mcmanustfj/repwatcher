@@ -95,6 +95,7 @@ def process_replay(
 
     if not game.all_human():
         logging.info(f"Skipping {filename.name} due to non-human players")
+        shutil.move(filename, filename.with_suffix(".cpu.rep"))
         return game, None
 
     name = name_replay(game, bias_players)

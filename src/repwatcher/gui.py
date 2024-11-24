@@ -8,11 +8,11 @@ from ttkbootstrap.window import Window  # type: ignore
 from tkinter import StringVar, Text
 import ttkbootstrap as ttk  # type: ignore
 
-from repwatcher.replay import sanitizemap
+from .replay import sanitizemap
 from .db import BuildOrder, Game
 
 
-def post_game(game: Game) -> None:
+def edit_game(game: Game) -> None:
     app = Window(title="Post Game", themename="flatly")
     app.place_window_center()
     mainframe = ttk.Frame(app, padding=10)

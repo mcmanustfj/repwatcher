@@ -10,7 +10,7 @@ from .config import DATA_DIR, get_config
 from .replay import discover_replays, process_replay
 from .db import Game, create_default_build_orders
 from .webclient import upload_replays_repmastered
-from .gui import post_game
+from .gui import edit_game
 
 import typer
 from rich.console import Console
@@ -35,7 +35,7 @@ def watch() -> None:
 @app.command()
 def test() -> None:
     game: Game = Game.select().first()
-    post_game(game)
+    edit_game(game)
 
 
 @app.command()
@@ -50,15 +50,22 @@ def backfill() -> None:
     logging.info("Backfilling replays")
     path_to_game: dict[Path, Game] = {}
     name_to_path: dict[str, Path] = {}
-    for replay in discover_replays():
+    paths = {Path(x.path) for x in Game.select().where(Game.path is not None)}
+    for replay_path in discover_replays():
+        if replay_path in paths:
+            continue
+        if ".cpu.rep" in replay_path.name:
+            continue
         try:
-            game, path = process_replay(replay, bias_players=get_config().bw_aliases)
+            game, path = process_replay(
+                replay_path, bias_players=get_config().bw_aliases
+            )
         except NotImplementedError:
             continue
         if not path:
             continue
         path_to_game[path] = Game.from_game(game, path)
-        name_to_path[replay.name] = path
+        name_to_path[replay_path.name] = path
 
     to_upload = []
     for path, dbgame in path_to_game.items():
