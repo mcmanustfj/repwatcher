@@ -65,6 +65,7 @@ warn_no_return = true
 
 [dependency-groups]
 dev = [
+    "invoke>=2.2.0",
     "ipdb>=0.13.13",
     "ipykernel>=6.29.5",
     "jupyter>=1.1.1",
