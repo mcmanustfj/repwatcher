@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.1](https://github.com/mcmanustfj/repwatcher/compare/v0.2.0...v0.2.1) (2024-11-26)
+
+
+### Bug Fixes
+
+* avoid tkinter bgerror for subsequent post-game windows ([ecebcaa](https://github.com/mcmanustfj/repwatcher/commit/ecebcaa5577c969cd4d3d468ba02c14f380d02d1))
+* do a better job skipping games with cpu when backfilling ([e702a26](https://github.com/mcmanustfj/repwatcher/commit/e702a26253c475c914ecaa697f851c44f7e9c2ae))
+* focus postgame app ([e19e7e8](https://github.com/mcmanustfj/repwatcher/commit/e19e7e87ee56529240650cb2cef381069a2291c6))
+
 ## 0.2.0 (2024-11-23)
 
 
