@@ -65,7 +65,9 @@ class Game(BaseModel):
         primary_key = CompositeKey("start_time", "player1", "player2")
 
     @staticmethod
-    def from_game(game: ParsedReplay, path: Path | str | None = None) -> "Game":
+    def from_parsed_replay(
+        game: ParsedReplay, path: Path | str | None = None
+    ) -> "Game":
         if len(game.players) != 2:
             raise NotImplementedError("Only 1v1 games are supported")
         if path:

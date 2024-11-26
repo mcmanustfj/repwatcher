@@ -39,6 +39,12 @@ def test() -> None:
 
 
 @app.command()
+def last() -> None:
+    game: Game = Game.select().order_by(Game.start_time.desc()).first()  # type: ignore
+    edit_game(game)
+
+
+@app.command()
 def create_defaults() -> None:
     """Create default build orders."""
     create_default_build_orders()
@@ -64,7 +70,7 @@ def backfill() -> None:
             continue
         if not path:
             continue
-        path_to_game[path] = Game.from_game(game, path)
+        path_to_game[path] = Game.from_parsed_replay(game, path)
         name_to_path[replay_path.name] = path
 
     to_upload = []

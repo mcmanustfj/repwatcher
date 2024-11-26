@@ -21,19 +21,21 @@ from .webclient import upload_replay_repmastered
 class ReplayHandler(FileSystemEventHandler):
     def on_created(self, event: FileSystemEvent):
         if not event.is_directory and event.src_path.endswith(".rep"):
-            game, path = process_replay(
+            if not Path(event.src_path).exists():
+                return
+            parsed_replay, path = process_replay(
                 event.src_path, bias_players=get_config().bw_aliases
             )
             if path is None:
                 return
-            dbgame = Game.from_game(game, path)
-            # if dbgame.url:
-            #     return
-            dbgame.url = upload_replay_repmastered(Path(path))  # type: ignore
-            dbgame.save()
+            game = Game.from_parsed_replay(parsed_replay, path)
+            if game.url:
+                return
+            game.url = upload_replay_repmastered(Path(path))  # type: ignore
+            game.save()
 
             if get_config().advanced:
-                edit_game(dbgame)
+                edit_game(game)
 
 
 def watch() -> None:

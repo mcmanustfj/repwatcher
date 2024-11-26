@@ -12,6 +12,7 @@ from .replay import sanitizemap
 from .db import BuildOrder, Game
 
 
+# noinspection PyTypeChecker
 def edit_game(game: Game) -> None:
     app = Window(title="Post Game", themename="flatly")
     app.place_window_center()
@@ -19,11 +20,11 @@ def edit_game(game: Game) -> None:
     mainframe.pack(side="top", fill="both", expand=True)
     ttk.Label(mainframe, text="Winner").grid(column=0, row=0, columnspan=2)
 
-    winnervar = StringVar(value=game.winner)
+    winner_var = StringVar(value=game.winner)
     ttk.Combobox(
         mainframe,
         values=[game.player1, game.player2],
-        textvariable=winnervar,
+        textvariable=winner_var,
         state="readonly",
     ).grid(column=2, row=0, columnspan=2)
 
@@ -58,9 +59,9 @@ def edit_game(game: Game) -> None:
     notes.grid(column=0, row=6, columnspan=4)
 
     def save_game():
-        game.winner = winnervar.get()
-        if newnotes := notes.get("1.0", "end"):
-            game.notes = newnotes
+        game.winner = winner_var.get()
+        if new_notes := notes.get("1.0", "end"):
+            game.notes = new_notes
         if bo := p1bo.get():
             if bo not in p1buildorders:
                 BuildOrder.create(
@@ -75,9 +76,10 @@ def edit_game(game: Game) -> None:
             game.buildorder2 = bo
         game.save()
         app.destroy()
+        ttk.Style.instance = None
 
-    buttonframe = ttk.Frame(app, padding=10)
-    buttonframe.pack(side="bottom", fill="x", expand=True)
+    button_frame = ttk.Frame(app, padding=10)
+    button_frame.pack(side="bottom", fill="x", expand=True)
 
     def open_replay_cmd():
         try:
@@ -91,11 +93,11 @@ def edit_game(game: Game) -> None:
             logging.exception("Failed to open replay")
 
     open_url = ttk.Button(
-        buttonframe, text="Open URL", command=lambda: webbrowser.open(game.url)
+        button_frame, text="Open URL", command=lambda: webbrowser.open(game.url)
     )
-    save = ttk.Button(buttonframe, text="Save", command=save_game)
+    save = ttk.Button(button_frame, text="Save", command=save_game)
     open_replay = ttk.Button(
-        buttonframe, text="Open Replay (SB)", command=open_replay_cmd
+        button_frame, text="Open Replay (SB)", command=open_replay_cmd
     )
 
     # pack buttons to be equally spaced in a row
@@ -103,6 +105,8 @@ def edit_game(game: Game) -> None:
     save.pack(side="left", expand=True)
     open_replay.pack(side="left", expand=True)
 
-    app.after(1, lambda: app.focus_force())
+    app.lift()
+    app.attributes("-topmost", True)
+    app.attributes("-topmost", False)
 
     app.mainloop()
