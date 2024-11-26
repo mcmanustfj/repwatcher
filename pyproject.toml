@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "repwatcher"
-version = "0.2.0"
+version = "0.2.1"
 description = "Tool to automatically upload SC:BW replays to RepMastered.com"
 readme = "README.rst"
 authors = [{ name = "Thomas McManus", email = "mcmanustfj@gmail.com" }]
