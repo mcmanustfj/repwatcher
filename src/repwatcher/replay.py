@@ -1,7 +1,7 @@
 """Python wrapper for screp.exe"""
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from json import loads
 import os
 from pathlib import Path
@@ -49,7 +49,9 @@ def parse_replay(filename: str | Path) -> ParsedReplay:
     return ParsedReplay(
         start_time=datetime.strptime(
             results["Header"]["StartTime"], "%Y-%m-%dT%H:%M:%S%z"
-        ),
+        )
+        .astimezone(timezone.utc)
+        .replace(tzinfo=None),
         duration=timedelta(seconds=int(results["Header"]["Frames"]) / 24),
         map=results["Header"]["Map"],
         players=[
