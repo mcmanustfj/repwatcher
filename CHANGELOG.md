@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/mcmanustfj/repwatcher/compare/v0.2.1...v0.2.2) (2024-11-30)
+
+
+### Bug Fixes
+
+* store timestamps in utc ([45bf5dc](https://github.com/mcmanustfj/repwatcher/commit/45bf5dc9b482939eddc28548f1466b106f8fdbb9))
+
 ## [0.2.1](https://github.com/mcmanustfj/repwatcher/compare/v0.2.0...v0.2.1) (2024-11-26)
 
 
