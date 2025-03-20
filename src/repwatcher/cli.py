@@ -5,10 +5,11 @@ import os
 import sys
 from pathlib import Path
 
+from sqlalchemy import select
 from . import config, watcher
 from .config import DATA_DIR, get_config
 from .replay import discover_replays, process_replay
-from .db import Game, create_default_build_orders
+from .db import Game, create_default_build_orders, session
 from .webclient import upload_replays_repmastered
 from .gui import edit_game
 
@@ -40,7 +41,7 @@ def test() -> None:
 
 @app.command()
 def last() -> None:
-    game: Game = Game.select().order_by(Game.start_time.desc()).first()  # type: ignore
+    game: Game = session.scalars(select(Game).order_by(Game.start_time.desc())).first()
     edit_game(game)
 
 
@@ -56,7 +57,10 @@ def backfill() -> None:
     logging.info("Backfilling replays")
     path_to_game: dict[Path, Game] = {}
     name_to_path: dict[str, Path] = {}
-    paths = {Path(x.path) for x in Game.select().where(Game.path is not None)}
+    paths = {
+        Path(x.path)
+        for x in Game.select().where(Game.path is not None and Game.url is not None)
+    }
     for replay_path in discover_replays():
         if replay_path in paths:
             continue
@@ -71,8 +75,7 @@ def backfill() -> None:
         if not path:
             continue
         path_to_game[path] = Game.from_parsed_replay(game, path)
-        name_to_path[replay_path.name] = path
-
+        name_to_path[path.name] = path
     to_upload = []
     for path, dbgame in path_to_game.items():
         if dbgame.url:
@@ -88,6 +91,18 @@ def backfill() -> None:
         dbgame = path_to_game[name_to_path[name]]
         dbgame.url = url  # type: ignore
         dbgame.save()
+
+
+@app.command(help="Swaps players in old games with an alias in player2")
+def backfill_alias() -> None:
+    logging.info("Backfilling replays with aliases")
+    for game in session.execute(
+        select(Game).where(Game.player2.in_(get_config().bw_aliases))
+    ):
+        game.player1, game.player2 = game.player2, game.player1
+        game.player1race, game.player2race = game.player2race, game.player1race
+        game.winner = game.player1 if game.winner == game.player2 else game.player2
+        game.save()
 
 
 def main() -> int:

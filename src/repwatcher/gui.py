@@ -12,14 +12,13 @@ from .replay import sanitizemap
 from .db import BuildOrder, Game
 
 
-# noinspection PyTypeChecker
 def edit_game(game: Game) -> None:
     app = Window(title="Post Game", themename="flatly")
     app.place_window_center()
     mainframe = ttk.Frame(app, padding=10)
     mainframe.pack(side="top", fill="both", expand=True)
     ttk.Label(mainframe, text="Winner").grid(column=0, row=0, columnspan=2)
-
+    breakpoint()
     winner_var = StringVar(value=game.winner)
     ttk.Combobox(
         mainframe,
@@ -82,6 +81,8 @@ def edit_game(game: Game) -> None:
     button_frame.pack(side="bottom", fill="x", expand=True)
 
     def open_replay_cmd():
+        if not game.path:
+            return
         try:
             if platform.system() == "Darwin":  # macOS
                 subprocess.call(("open", game.path))
@@ -93,11 +94,17 @@ def edit_game(game: Game) -> None:
             logging.exception("Failed to open replay")
 
     open_url = ttk.Button(
-        button_frame, text="Open URL", command=lambda: webbrowser.open(game.url)
+        button_frame,
+        text="Open URL",
+        command=lambda: webbrowser.open(game.url),  # type: ignore
+        state="enabled" if game.url else "disabled",
     )
     save = ttk.Button(button_frame, text="Save", command=save_game)
     open_replay = ttk.Button(
-        button_frame, text="Open Replay (SB)", command=open_replay_cmd
+        button_frame,
+        text="Open Replay (SB)",
+        command=open_replay_cmd,
+        state="enabled" if game.path else "disabled",
     )
 
     # pack buttons to be equally spaced in a row

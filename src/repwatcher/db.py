@@ -1,68 +1,57 @@
-from datetime import datetime
+import datetime
 from pathlib import Path
-from peewee import (
-    Model,
-    SqliteDatabase,
-    CompositeKey,
-    TextField,
-    DateTimeField,
-    FloatField,
+from sqlalchemy import (
+    create_engine,
 )
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Mapped, mapped_column
 from .config import DATA_DIR
-from .replay import ParsedReplay, Race
+from .replay import ParsedReplay
 
-db = SqliteDatabase(
-    DATA_DIR / "repwatcher.db", pragmas={"journal_mode": "wal", "foreign_keys": 1}
-)
-
-
-class BaseModel(Model):
-    class Meta:
-        database = db
+engine = create_engine(f"sqlite:///{DATA_DIR / 'repwatcher.db'}", echo=True)
+Base = declarative_base()
+Session = sessionmaker(bind=engine)
+session = Session()
 
 
-class BuildOrder(BaseModel):
-    buildorder: str = TextField()  # type: ignore
-    race: Race = TextField()  # type: ignore
-    vs: Race = TextField()  # type: ignore
-
-    class Meta:  # type: ignore
-        primary_key = CompositeKey("buildorder", "race", "vs")
+class BuildOrder(Base):
+    __tablename__ = "build_order"
+    buildorder: Mapped[str] = mapped_column(primary_key=True)
+    race: Mapped[str] = mapped_column(primary_key=True)
+    vs: Mapped[str] = mapped_column(primary_key=True)
 
     @staticmethod
     def get_buildorders_from_matchup(Game) -> tuple[list[str], list[str]]:
         p1 = [
             x.buildorder
-            for x in BuildOrder.select().where(
-                BuildOrder.race == Game.player1race, BuildOrder.vs == Game.player2race
-            )
-        ]  # type: ignore
+            for x in session.query(BuildOrder)
+            .filter_by(race=Game.player1race, vs=Game.player2race)
+            .all()
+        ]
         p2 = [
             x.buildorder
-            for x in BuildOrder.select().where(
-                BuildOrder.race == Game.player2race, BuildOrder.vs == Game.player1race
-            )
-        ]  # type: ignore
+            for x in session.query(BuildOrder)
+            .filter_by(race=Game.player2race, vs=Game.player1race)
+            .all()
+        ]
         return p1, p2
 
 
-class Game(BaseModel):
-    start_time: datetime = DateTimeField()  # type: ignore
-    duration: float = FloatField()  # type: ignore
-    map: str = TextField()  # type: ignore
-    player1: str = TextField()  # type: ignore
-    player2: str = TextField()  # type: ignore
-    player1race: str = TextField()  # type: ignore
-    player2race: str = TextField()  # type: ignore
-    winner: str = TextField()  # type: ignore
-    buildorder1: str = TextField(null=True)  # type: ignore
-    buildorder2: str = TextField(null=True)  # type: ignore
-    notes: str = TextField(null=True)  # type: ignore
-    path: str = TextField(null=True)  # type: ignore
-    url: str = TextField(null=True)  # type: ignore
-
-    class Meta:  # type: ignore
-        primary_key = CompositeKey("start_time", "player1", "player2")
+class Game(Base):
+    __tablename__ = "game"
+    start_time: Mapped[datetime.datetime]
+    duration: Mapped[float]
+    map: Mapped[str]
+    player1: Mapped[str] = mapped_column(primary_key=True)
+    player2: Mapped[str] = mapped_column(primary_key=True)
+    player1race: Mapped[str]
+    player2race: Mapped[str]
+    winner: Mapped[str]
+    buildorder1: Mapped[str | None]
+    buildorder2: Mapped[str | None]
+    notes: Mapped[str | None]
+    path: Mapped[str | None]
+    url: Mapped[str | None]
 
     @staticmethod
     def from_parsed_replay(
@@ -73,23 +62,36 @@ class Game(BaseModel):
         if path:
             path = str(path)
 
-        return Game.get_or_create(
+        existing_game = (
+            session.query(Game)
+            .filter_by(
+                start_time=game.start_time,
+                player1=game.players[0]["name"],
+                player2=game.players[1]["name"],
+            )
+            .first()
+        )
+
+        if existing_game:
+            return existing_game
+
+        new_game = Game(
             start_time=game.start_time,
             player1=game.players[0]["name"],
             player2=game.players[1]["name"],
-            defaults=dict(
-                duration=game.duration.total_seconds(),
-                map=game.map,
-                player1race=game.players[0]["race"],
-                player2race=game.players[1]["race"],
-                winner=game.winner,
-                path=path,
-            ),
-        )[0]
+            duration=game.duration.total_seconds(),
+            map=game.map,
+            player1race=game.players[0]["race"],
+            player2race=game.players[1]["race"],
+            winner=game.winner,
+            path=path,
+        )
+        session.add(new_game)
+        session.commit()
+        return new_game
 
 
-db.connect()
-db.create_tables([Game, BuildOrder], safe=True)
+Base.metadata.create_all(engine)
 
 
 def create_default_build_orders():
@@ -130,6 +132,5 @@ def create_default_build_orders():
         BuildOrder(buildorder="9 hatch", race="Zerg", vs="Zerg"),
     ]
     for bo in default_build_orders:
-        BuildOrder.insert(
-            [bo.buildorder, bo.race, bo.vs]
-        ).on_conflict_ignore().execute()
+        session.merge(bo)
+    session.commit()

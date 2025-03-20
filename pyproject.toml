@@ -19,9 +19,9 @@ dependencies = [
     "watchdog",
     "rich",
     "typer",
-    "peewee>=3.17.8",
     "beautifulsoup4>=4.12.3",
     "ttkbootstrap>=1.10.1",
+    "sqlalchemy>=2.0.39",
 ]
 
 [project.optional-dependencies]

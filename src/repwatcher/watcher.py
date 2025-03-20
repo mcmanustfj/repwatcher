@@ -23,9 +23,13 @@ class ReplayHandler(FileSystemEventHandler):
         if not event.is_directory and event.src_path.endswith(".rep"):
             if not Path(event.src_path).exists():
                 return
-            parsed_replay, path = process_replay(
-                event.src_path, bias_players=get_config().bw_aliases
-            )
+            try:
+                parsed_replay, path = process_replay(
+                    event.src_path, bias_players=get_config().bw_aliases
+                )
+            except Exception as e:
+                logging.error(f"Error processing replay {event.src_path}: {e}")
+                return
             if path is None:
                 return
             game = Game.from_parsed_replay(parsed_replay, path)

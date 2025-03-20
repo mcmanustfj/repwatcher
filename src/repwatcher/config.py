@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import json
+import os
 from pathlib import Path
 import platformdirs
 import logging
@@ -25,9 +26,6 @@ def get_config() -> Config:
     with open(config_file, "r") as f:
         _config = json.load(f)
         try:
-            _config["bw_aliases"] = [
-                s.strip() for s in _config.get("bw_aliases", "").split(",")
-            ]
             return Config(**_config)
         except TypeError:
             logging.error(f"Failed to read config from {config_file}")
@@ -68,14 +66,14 @@ def create_config() -> None:
         json.dump(config, f, indent=4)
 
 
-@app.command("open")
+@app.command("open", help="Open the config file in the default editor.")
 def open_config() -> None:
     ensure_config()
     # if on windows
-    typer.launch(str(config_file))
+    os.system(str(config_file))
 
 
-@app.command()
+@app.command(help="Reset the config to default values.")
 def reset() -> None:
     if config_file.exists():
         logging.info(f"Deleting config file at {config_file}")
@@ -84,10 +82,13 @@ def reset() -> None:
     print("Config reset to default values.")
 
 
-@app.command("set")
+@app.command("set", help="Set a config value.")
 def set_config(key: str, value: str) -> None:
     ensure_config()
     config = get_config()
+    if key == "bw_aliases":
+        typer.echo("Use add_alias and remove_alias to modify bw_aliases.")
+        return
     if hasattr(config, key):
         logging.info(f"Setting {key} to {value}")
         with open(config_file, "r") as f:
@@ -99,7 +100,28 @@ def set_config(key: str, value: str) -> None:
         print(f"Invalid key: {key}")
 
 
-@app.command()
+@app.command(help="Add an alias for yourself.")
+def add_alias(alias: str) -> None:
+    ensure_config()
+    config = get_config()
+    config.bw_aliases.append(alias)
+    with open(config_file, "w") as f:
+        json.dump(config.__dict__, f, indent=4)
+
+
+@app.command(help="Remove an alias from yourself.")
+def remove_alias(alias: str) -> None:
+    ensure_config()
+    config = get_config()
+    if alias in config.bw_aliases:
+        config.bw_aliases.remove(alias)
+        with open(config_file, "w") as f:
+            json.dump(config.__dict__, f, indent=4)
+    else:
+        print(f"Alias {alias} not found in config.")
+
+
+@app.command(help="Show the current config.")
 def show() -> None:
     ensure_config()
     config = get_config()

@@ -43,6 +43,8 @@ def parse_replay(filename: str | Path) -> ParsedReplay:
     proc.check_returncode()
     results = loads(proc.stdout)
     players = results["Header"]["Players"]
+
+    players = [player for player in players if player["Observer"] is False]
     if len(players) != 2:
         raise NotImplementedError("Only 1v1 games are supported")
 
