@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/mcmanustfj/repwatcher/compare/v0.2.1...v0.3.0) (2025-03-20)
+
+
+### Features
+
+* better config alias handling ([9434ed4](https://github.com/mcmanustfj/repwatcher/commit/9434ed4800ec9caaa9af6b18536821fd3baf72ec))
+
+
+### Bug Fixes
+
+* store timestamps in utc ([45bf5dc](https://github.com/mcmanustfj/repwatcher/commit/45bf5dc9b482939eddc28548f1466b106f8fdbb9))
+
 ## [0.2.1](https://github.com/mcmanustfj/repwatcher/compare/v0.2.0...v0.2.1) (2024-11-26)
 
 
