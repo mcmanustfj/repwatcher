@@ -2,6 +2,7 @@ import logging
 import os
 import platform
 import subprocess
+from typing import Sequence
 import webbrowser
 
 from ttkbootstrap.window import Window  # type: ignore
@@ -9,16 +10,47 @@ from tkinter import StringVar, Text
 import ttkbootstrap as ttk  # type: ignore
 
 from .replay import sanitizemap
-from .db import BuildOrder, Game
+from .db import BuildOrder, Game, session
+
+
+THEMENAME = "flatly"
+
+
+class global_window:
+    def __init__(self) -> None:
+        self.window = Window(title="hidden", themename="flatly")
+        self.window.withdraw()
+
+        self.toplevel_count = 0
+
+    def toplevel(self, *args, **kwargs) -> ttk.Toplevel:
+        tl = ttk.Toplevel(*args, **kwargs)
+        self.toplevel_count += 1
+
+        def on_close():
+            tl.destroy()
+            self.toplevel_count -= 1
+            if self.toplevel_count == 0:
+                self.window.destroy()
+
+        tl.protocol("WM_DELETE_WINDOW", on_close)
+        return tl
+
+    def close_child(self, child: ttk.Toplevel) -> None:
+        child.destroy()
+        self.toplevel_count -= 1
+        if self.toplevel_count == 0:
+            self.window.destroy()
+
+
+ROOT = global_window()
 
 
 def edit_game(game: Game) -> None:
-    app = Window(title="Post Game", themename="flatly")
-    app.place_window_center()
+    app = ROOT.toplevel(title="Edit Game")
     mainframe = ttk.Frame(app, padding=10)
     mainframe.pack(side="top", fill="both", expand=True)
     ttk.Label(mainframe, text="Winner").grid(column=0, row=0, columnspan=2)
-    breakpoint()
     winner_var = StringVar(value=game.winner)
     ttk.Combobox(
         mainframe,
@@ -73,25 +105,14 @@ def edit_game(game: Game) -> None:
                     buildorder=bo, race=game.player2race, vs=game.player1race
                 )
             game.buildorder2 = bo
-        game.save()
-        app.destroy()
+        session.add(game)
+        session.commit()
+
+        ROOT.close_child(app)
         ttk.Style.instance = None
 
     button_frame = ttk.Frame(app, padding=10)
     button_frame.pack(side="bottom", fill="x", expand=True)
-
-    def open_replay_cmd():
-        if not game.path:
-            return
-        try:
-            if platform.system() == "Darwin":  # macOS
-                subprocess.call(("open", game.path))
-            elif platform.system() == "Windows":  # Windows
-                os.startfile(game.path)
-            else:  # linux variants
-                subprocess.call(("xdg-open", game.path))
-        except:  # noqa
-            logging.exception("Failed to open replay")
 
     open_url = ttk.Button(
         button_frame,
@@ -103,7 +124,7 @@ def edit_game(game: Game) -> None:
     open_replay = ttk.Button(
         button_frame,
         text="Open Replay (SB)",
-        command=open_replay_cmd,
+        command=lambda: open_replay_cmd(game),
         state="enabled" if game.path else "disabled",
     )
 
@@ -112,8 +133,69 @@ def edit_game(game: Game) -> None:
     save.pack(side="left", expand=True)
     open_replay.pack(side="left", expand=True)
 
-    app.lift()
+    # app.lift()
+    app.place_window_center()
     app.attributes("-topmost", True)
-    app.attributes("-topmost", False)
+    # app.attributes("-topmost", False)
 
     app.mainloop()
+
+
+def list_games(games: Sequence[Game]) -> None:
+    app = ROOT.toplevel(title="Replay list")
+    # style = ttk.Style()
+    # style.configure(".", font=("", 14))
+    # style.configure("Treeview", rowheight=28)
+
+    app.place_window_center()
+    tree = ttk.Treeview(
+        app,
+        columns=("start", "duration", "map", "p1", "p2", "result"),
+        show="headings",
+    )
+    tree.heading("start", text="Start")
+    tree.heading("duration", text="Duration")
+    tree.heading("map", text="Map")
+    tree.heading("p1", text="Player 1")
+    tree.heading("p2", text="Player 2")
+    tree.heading("result", text="Result")
+    tree.pack()
+
+    for game in games:
+        dur = f"{game.duration // 60:.0f}:{game.duration % 60:02.0f}"
+        tree.insert(
+            parent="",
+            index="end",
+            values=(
+                game.start_time.strftime("%m/%d %H:%M"),
+                dur,
+                sanitizemap(game.map),
+                f"{game.player1} ({game.player1race[:1]})",
+                f"{game.player2} ({game.player2race[:1]})",
+                "Win" if game.winner == game.player1 else "Loss",
+            ),
+        )
+
+    def click_game(event):
+        focusstr = tree.focus()
+        focusidx = int(focusstr[1:]) - 1
+        game = games[focusidx]
+        edit_game(game)
+
+    tree.bind("<Double-Button-1>", click_game)
+
+    app.mainloop()
+
+
+def open_replay_cmd(game: Game):
+    if not game.path:
+        return
+    try:
+        if platform.system() == "Darwin":  # macOS
+            subprocess.call(("open", game.path))
+        elif platform.system() == "Windows":  # Windows
+            os.startfile(game.path)
+        else:  # linux variants
+            subprocess.call(("xdg-open", game.path))
+    except:  # noqa
+        logging.exception("Failed to open replay")

@@ -5,13 +5,13 @@ import os
 import sys
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import and_, select
 from . import config, watcher
 from .config import DATA_DIR, get_config
 from .replay import discover_replays, process_replay
 from .db import Game, create_default_build_orders, session
 from .webclient import upload_replays_repmastered
-from .gui import edit_game
+from .gui import edit_game, list_games
 
 import typer
 from rich.console import Console
@@ -45,6 +45,12 @@ def last() -> None:
     edit_game(game)
 
 
+@app.command("list")
+def list_():
+    games = session.scalars(select(Game).order_by(Game.start_time.desc())).all()
+    list_games(games)
+
+
 @app.command()
 def create_defaults() -> None:
     """Create default build orders."""
@@ -59,7 +65,10 @@ def backfill() -> None:
     name_to_path: dict[str, Path] = {}
     paths = {
         Path(x.path)
-        for x in Game.select().where(Game.path is not None and Game.url is not None)
+        for x in session.scalars(
+            select(Game).where(and_(Game.path.isnot(None), Game.url.isnot(None)))
+        )
+        if x.path
     }
     for replay_path in discover_replays():
         if replay_path in paths:
@@ -90,19 +99,19 @@ def backfill() -> None:
     for name, url in name_to_url.items():
         dbgame = path_to_game[name_to_path[name]]
         dbgame.url = url  # type: ignore
-        dbgame.save()
+        session.add(dbgame)
+    session.commit()
 
 
 @app.command(help="Swaps players in old games with an alias in player2")
 def backfill_alias() -> None:
     logging.info("Backfilling replays with aliases")
-    for game in session.execute(
+    for game in session.scalars(
         select(Game).where(Game.player2.in_(get_config().bw_aliases))
     ):
         game.player1, game.player2 = game.player2, game.player1
         game.player1race, game.player2race = game.player2race, game.player1race
-        game.winner = game.player1 if game.winner == game.player2 else game.player2
-        game.save()
+        session.commit()
 
 
 def main() -> int:

@@ -10,7 +10,7 @@ from watchdog.events import FileSystemEventHandler, FileSystemEvent
 
 import logging
 
-from repwatcher.db import Game
+from repwatcher.db import Game, session
 from repwatcher.gui import edit_game
 from repwatcher.replay import process_replay
 
@@ -36,7 +36,8 @@ class ReplayHandler(FileSystemEventHandler):
             if game.url:
                 return
             game.url = upload_replay_repmastered(Path(path))  # type: ignore
-            game.save()
+            session.add(game)
+            session.commit()
 
             if get_config().advanced:
                 edit_game(game)

@@ -3,19 +3,25 @@ from pathlib import Path
 from sqlalchemy import (
     create_engine,
 )
+from sqlalchemy.dialects.sqlite import DATETIME
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Mapped, mapped_column
 from .config import DATA_DIR
 from .replay import ParsedReplay
 
-engine = create_engine(f"sqlite:///{DATA_DIR / 'repwatcher.db'}", echo=True)
+dt = DATETIME(
+    truncate_microseconds=True,
+)
+
+
+engine = create_engine(f"sqlite:///{DATA_DIR / 'repwatcher.db'}", echo=False)
 Base = declarative_base()
-Session = sessionmaker(bind=engine)
+Session = sessionmaker(bind=engine, autoflush=True)
 session = Session()
 
 
 class BuildOrder(Base):
-    __tablename__ = "build_order"
+    __tablename__ = "buildorder"
     buildorder: Mapped[str] = mapped_column(primary_key=True)
     race: Mapped[str] = mapped_column(primary_key=True)
     vs: Mapped[str] = mapped_column(primary_key=True)
@@ -39,7 +45,7 @@ class BuildOrder(Base):
 
 class Game(Base):
     __tablename__ = "game"
-    start_time: Mapped[datetime.datetime]
+    start_time: Mapped[datetime.datetime] = mapped_column(type_=dt, primary_key=True)
     duration: Mapped[float]
     map: Mapped[str]
     player1: Mapped[str] = mapped_column(primary_key=True)

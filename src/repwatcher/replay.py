@@ -104,7 +104,7 @@ def process_replay(
 
     name = name_replay(game, bias_players)
     if filename.name == name:
-        logging.info(f"Skipping {filename.name} due to correct name")
+        logging.debug(f"Skipping {filename.name} due to correct name")
         return game, filename
     parent = filename.parent
     new_filename = parent / name
