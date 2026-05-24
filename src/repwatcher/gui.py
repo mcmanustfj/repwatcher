@@ -18,12 +18,17 @@ THEMENAME = "flatly"
 
 class global_window:
     def __init__(self) -> None:
+        self.inited = False
+
+    def init(self):
         self.window = Window(title="hidden", themename="flatly")
         self.window.withdraw()
-
         self.toplevel_count = 0
+        self.inited = True
 
     def toplevel(self, *args, **kwargs) -> ttk.Toplevel:
+        if not self.inited:
+            self.init()
         tl = ttk.Toplevel(*args, **kwargs)
         self.toplevel_count += 1
 
@@ -37,6 +42,9 @@ class global_window:
         return tl
 
     def close_child(self, child: ttk.Toplevel) -> None:
+        if not self.inited:
+            raise RuntimeError("global_window not initialized")
+            return
         child.destroy()
         self.toplevel_count -= 1
         if self.toplevel_count == 0:
@@ -46,8 +54,11 @@ class global_window:
 ROOT = global_window()
 
 
-def edit_game(game: Game) -> None:
-    app = ROOT.toplevel(title="Edit Game")
+def edit_game(game: Game, use_root=True) -> None:
+    if use_root:
+        app = ROOT.toplevel(title="Edit Game")
+    else:
+        app = Window(title="Postgame", themename=THEMENAME)
     mainframe = ttk.Frame(app, padding=10)
     mainframe.pack(side="top", fill="both", expand=True)
     ttk.Label(mainframe, text="Winner").grid(column=0, row=0, columnspan=2)
@@ -95,20 +106,25 @@ def edit_game(game: Game) -> None:
             game.notes = new_notes
         if bo := p1bo.get():
             if bo not in p1buildorders:
-                BuildOrder.create(
-                    buildorder=bo, race=game.player1race, vs=game.player2race
+                session.add(
+                    BuildOrder(
+                        buildorder=bo, race=game.player1race, vs=game.player2race
+                    )
                 )
             game.buildorder1 = bo
         if bo := p2bo.get():
             if bo not in p2buildorders:
-                BuildOrder.create(
-                    buildorder=bo, race=game.player2race, vs=game.player1race
+                session.add(
+                    BuildOrder(
+                        buildorder=bo, race=game.player1race, vs=game.player2race
+                    )
                 )
+
             game.buildorder2 = bo
         session.add(game)
         session.commit()
 
-        ROOT.close_child(app)
+        app.destroy()
         ttk.Style.instance = None
 
     button_frame = ttk.Frame(app, padding=10)
@@ -143,7 +159,6 @@ def edit_game(game: Game) -> None:
 
 def list_games(games: Sequence[Game]) -> None:
     app = ROOT.toplevel(title="Replay list")
-    # style = ttk.Style()
     # style.configure(".", font=("", 14))
     # style.configure("Treeview", rowheight=28)
 
@@ -178,7 +193,7 @@ def list_games(games: Sequence[Game]) -> None:
 
     def click_game(event):
         focusstr = tree.focus()
-        focusidx = int(focusstr[1:]) - 1
+        focusidx = int(focusstr[1:], base=16) - 1
         game = games[focusidx]
         edit_game(game)
 

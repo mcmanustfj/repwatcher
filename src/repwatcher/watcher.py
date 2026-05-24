@@ -40,7 +40,7 @@ class ReplayHandler(FileSystemEventHandler):
             session.commit()
 
             if get_config().advanced:
-                edit_game(game)
+                edit_game(game, use_root=False)
 
 
 def watch() -> None:
