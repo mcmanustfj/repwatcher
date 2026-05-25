@@ -7,9 +7,9 @@ repwatcher
         :target: https://pypi.python.org/pypi/repwatcher
 
 
-Tool to automatically upload SC:BW replays to RepMastered.com
+Tool to automatically upload SC:BW replays to RepMastered.com and track them locally.
 
-Recommended installation is with pipx (`pip install pipx`):
+Recommended installation is with pipx/uvx (`pip install pipx`):
  - `pipx install repwatcher`
  - `repwatcher watch`
 
@@ -18,8 +18,8 @@ Configuration:
 
 `repwatcher config` will open a config file.
 
-`replay_directory` is the directory to watch.    
-`authtoken` is the `authtoken` cookie from RepMastered.com. 
+`replay_directory` is the directory to watch.
+`authtoken` is the `authtoken` cookie from RepMastered.com.
 
 If you have `authtoken` in your config, uploads will be associated with your account.
 
