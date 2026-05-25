@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0](https://github.com/mcmanustfj/repwatcher/compare/v0.2.1...v0.3.0) (2026-05-25)
+
+
+### Features
+
+* add list_games, fix sqlalchemy ([912a0df](https://github.com/mcmanustfj/repwatcher/commit/912a0dfa6e9fa980895afca5dd86b97e91108b06))
+* better config alias handling ([9434ed4](https://github.com/mcmanustfj/repwatcher/commit/9434ed4800ec9caaa9af6b18536821fd3baf72ec))
+
+
+### Bug Fixes
+
+* creating build order player 2 ([52d0692](https://github.com/mcmanustfj/repwatcher/commit/52d0692e5807baceb0f82c6a7778bbeadc807487))
+* store timestamps in utc ([45bf5dc](https://github.com/mcmanustfj/repwatcher/commit/45bf5dc9b482939eddc28548f1466b106f8fdbb9))
+
 ## [0.2.1](https://github.com/mcmanustfj/repwatcher/compare/v0.2.0...v0.2.1) (2024-11-26)
 
 
