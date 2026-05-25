@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/mcmanustfj/repwatcher/compare/v0.3.0...v0.3.1) (2026-05-25)
+
+
+### Bug Fixes
+
+* creating build order player 2 ([6014eee](https://github.com/mcmanustfj/repwatcher/commit/6014eeee3f8d2d12118c842ed809917eac424182))
+
 ## [0.3.0](https://github.com/mcmanustfj/repwatcher/compare/v0.2.1...v0.3.0) (2026-05-25)
 
 
