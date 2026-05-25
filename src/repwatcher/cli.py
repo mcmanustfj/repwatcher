@@ -34,15 +34,9 @@ def watch() -> None:
 
 
 @app.command()
-def test() -> None:
-    game: Game = Game.select().first()
-    edit_game(game)
-
-
-@app.command()
 def last() -> None:
     game: Game = session.scalars(select(Game).order_by(Game.start_time.desc())).first()
-    edit_game(game)
+    edit_game(game, False)
 
 
 @app.command("list")
@@ -55,6 +49,22 @@ def list_():
 def create_defaults() -> None:
     """Create default build orders."""
     create_default_build_orders()
+
+
+def version_callback(value: bool):
+    from repwatcher import __version__
+
+    if value:
+        print(f"repwatcher {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def common(
+    ctx: typer.Context,
+    version: bool = typer.Option(None, "--version", callback=version_callback),
+) -> None:
+    pass
 
 
 @app.command()

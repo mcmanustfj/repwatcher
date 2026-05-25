@@ -116,10 +116,9 @@ def edit_game(game: Game, use_root=True) -> None:
             if bo not in p2buildorders:
                 session.add(
                     BuildOrder(
-                        buildorder=bo, race=game.player1race, vs=game.player2race
+                        buildorder=bo, race=game.player2race, vs=game.player1race
                     )
                 )
-
             game.buildorder2 = bo
         session.add(game)
         session.commit()
