@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/mcmanustfj/repwatcher/compare/v0.3.1...v0.4.0) (2026-09-06)
+
+
+### Features
+
+* resizeable list view ([1fc1c8f](https://github.com/mcmanustfj/repwatcher/commit/1fc1c8f4277a4b5c0e933ee2cc382059da7b66a2))
+
 ## [0.3.1](https://github.com/mcmanustfj/repwatcher/compare/v0.3.0...v0.3.1) (2026-05-25)
 
 
