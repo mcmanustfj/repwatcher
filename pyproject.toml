@@ -10,8 +10,8 @@ readme = "README.rst"
 authors = [{ name = "Thomas McManus", email = "mcmanustfj@gmail.com" }]
 maintainers = [{ name = "Thomas McManus", email = "mcmanustfj@gmail.com" }]
 classifiers = []
-license = { text = "MIT license" }
-requires-python = ">=3.8"
+license = "MIT"
+requires-python = ">=3.14"
 keywords = ["starcraft", "replays", "repmastered"]
 dependencies = [
     "requests",
@@ -22,14 +22,6 @@ dependencies = [
     "beautifulsoup4>=4.12.3",
     "ttkbootstrap>=1.10.1",
     "sqlalchemy>=2.0.39",
-]
-
-[project.optional-dependencies]
-dev = [
-  "pyright",
-  "ruff",
-  "build",
-  "twine",
 ]
 
 [project.urls]
@@ -65,12 +57,13 @@ warn_no_return = true
 
 [dependency-groups]
 dev = [
+    "build>=1.5.0",
     "invoke>=2.2.0",
     "ipdb>=0.13.13",
     "ipykernel>=6.29.5",
-    "jupyter>=1.1.1",
-    "mypy>=1.13.0",
     "pyright>=1.1.388",
+    "ruff>=0.16.2",
+    "twine>=6.2.0",
     "types-beautifulsoup4>=4.12.0.20241020",
     "types-peewee>=3.17.8.20241117",
     "types-requests>=2.32.0.20241016",

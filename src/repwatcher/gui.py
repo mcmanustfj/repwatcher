@@ -56,9 +56,9 @@ ROOT = global_window()
 
 def edit_game(game: Game, use_root=True) -> None:
     if use_root:
-        app = ROOT.toplevel(title="Edit Game")
+        app = ROOT.toplevel(title="Repwatcher: Edit Game")
     else:
-        app = Window(title="Postgame", themename=THEMENAME)
+        app = Window(title="Repwatcher: Postgame", themename=THEMENAME)
     mainframe = ttk.Frame(app, padding=10)
     mainframe.pack(side="top", fill="both", expand=True)
     ttk.Label(mainframe, text="Winner").grid(column=0, row=0, columnspan=2)
@@ -157,23 +157,29 @@ def edit_game(game: Game, use_root=True) -> None:
 
 
 def list_games(games: Sequence[Game]) -> None:
-    app = ROOT.toplevel(title="Replay list")
+    app = ROOT.toplevel(title="Repwatcher: Replay list")
     # style.configure(".", font=("", 14))
     # style.configure("Treeview", rowheight=28)
 
     app.place_window_center()
+    app.grid_rowconfigure(0, weight=1)
+    app.grid_columnconfigure(0, weight=1)
+
     tree = ttk.Treeview(
         app,
-        columns=("start", "duration", "map", "p1", "p2", "result"),
+        columns=("start", "duration", "map", "p1","bo1", "p2","bo2", "result"),
         show="headings",
     )
-    tree.heading("start", text="Start")
-    tree.heading("duration", text="Duration")
-    tree.heading("map", text="Map")
-    tree.heading("p1", text="Player 1")
-    tree.heading("p2", text="Player 2")
-    tree.heading("result", text="Result")
+    tree.heading("start", text="Start", anchor="w")
+    tree.heading("duration", text="Duration", anchor="w")
+    tree.heading("map", text="Map", anchor="w")
+    tree.heading("p1", text="Player 1", anchor="w")
+    tree.heading("bo1", text="Build Order", anchor="w")
+    tree.heading("p2", text="Player 2", anchor="w")
+    tree.heading("bo2", text="Build Order", anchor="w")
+    tree.heading("result", text="Result", anchor="w")
     tree.pack()
+    tree.grid(column=0, row=0, sticky="nsew")
 
     for game in games:
         dur = f"{game.duration // 60:.0f}:{game.duration % 60:02.0f}"
@@ -185,7 +191,9 @@ def list_games(games: Sequence[Game]) -> None:
                 dur,
                 sanitizemap(game.map),
                 f"{game.player1} ({game.player1race[:1]})",
+                game.buildorder1,
                 f"{game.player2} ({game.player2race[:1]})",
+                game.buildorder2,
                 "Win" if game.winner == game.player1 else "Loss",
             ),
         )

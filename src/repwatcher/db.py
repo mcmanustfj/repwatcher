@@ -14,6 +14,7 @@ dt = DATETIME(
 )
 
 
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 engine = create_engine(f"sqlite:///{DATA_DIR / 'repwatcher.db'}", echo=False)
 Base = declarative_base()
 Session = sessionmaker(bind=engine, autoflush=True)
